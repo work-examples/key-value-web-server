@@ -37,7 +37,7 @@ target_include_directories(Crow
 )
 
 find_package(Boost 1.64 COMPONENTS system date_time REQUIRED)
-message(STATUS "Boost_VERSION: ${Boost_VERSION}")
+message(VERBOSE "Boost_VERSION: ${Boost_VERSION}")
 
 find_package(Threads REQUIRED)
 

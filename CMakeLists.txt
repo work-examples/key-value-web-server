@@ -1,4 +1,11 @@
 # ====================================
+
+set(CMAKE_MESSAGE_LOG_LEVEL         "VERBOSE"          CACHE STRING "Log verbosity (STATUS | VERBOSE | DEBUG | TRACE)")
+
+set(DEPS_REQUIRED_BOOST_VERSION     "1.78.0"           CACHE STRING "Required package version")
+set(DEPS_REQUIRED_RAPIDJSON_VERSION "1.1.0-b557259-p0" CACHE STRING "Required package version")
+
+# ====================================
 # Setup Hunter package manager
 # ====================================
 
@@ -29,22 +36,48 @@ message(STATUS "HUNTER_Boost_VERSION: ${HUNTER_Boost_VERSION}")
 add_subdirectory(dependency/CrowCpp)
 
 # ====================================
+# Setup RapidJSON library
+# ====================================
+
+hunter_add_package(RapidJSON)
+message(STATUS "HUNTER_RapidJSON_VERSION: ${HUNTER_RapidJSON_VERSION}")
+
+cmake_policy(SET CMP0074 NEW) # for RapidJSON
+find_package(RapidJSON CONFIG REQUIRED)
+message(VERBOSE "RapidJSON_VERSION: ${RapidJSON_VERSION}")
+
+# ====================================
+
+# Set required C++ standard
+set(CMAKE_CXX_STANDARD 17) # for std::optional & etc
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(SOURCES
     main.cpp
+    BackgroundWorker.cpp
+    DataEngine.cpp
+    DataSerializer.cpp
+    HttpServer.cpp
 )
 
-file(GLOB CMAKE_FILES
+set(HEADERS
+    BackgroundWorker.h
+    DataEngine.h
+    DataSerializer.h
+    HttpServer.h
+)
+
+set(CMAKE_FILES
      "CMakeLists.txt"
-     "cmake/*.cmake"
-     "cmake/Hunter/*.cmake"
+     "cmake/HunterGate.cmake"
+     "cmake/Hunter/config.cmake"
 )
 
-file(GLOB CROWCPP_FILES
+set(CROWCPP_FILES
+     "dependency/CrowCpp/CMakeLists.txt"
      "dependency/CrowCpp/LICENSE"
+     "dependency/CrowCpp/README.md"
      "dependency/CrowCpp/VERSION"
-     "dependency/CrowCpp/*.md"
-     "dependency/CrowCpp/*.txt"
 )
 
 file(GLOB_RECURSE CROWCPP_HEADERS
@@ -54,8 +87,10 @@ file(GLOB_RECURSE CROWCPP_HEADERS
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${CMAKE_FILES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/dependency/CrowCpp PREFIX CrowCpp FILES ${CROWCPP_HEADERS} ${CROWCPP_FILES})
 
-add_executable(WebServer ${SOURCES} ${CMAKE_FILES} ${CROWCPP_HEADERS} ${CROWCPP_FILES})
+add_executable(WebServer ${SOURCES} ${HEADERS} ${CMAKE_FILES} ${CROWCPP_HEADERS} ${CROWCPP_FILES})
 
-target_link_libraries(WebServer	PRIVATE Crow)
+target_include_directories(WebServer PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
+
+target_link_libraries(WebServer PRIVATE Crow)
 
 # ====================================
