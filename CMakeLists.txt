@@ -49,7 +49,7 @@ message(VERBOSE "RapidJSON_VERSION: ${RapidJSON_VERSION}")
 # ====================================
 
 # Set required C++ standard
-set(CMAKE_CXX_STANDARD 17) # for std::optional & etc
+set(CMAKE_CXX_STANDARD 20) # C++17 for `std::optional` & etc; c++20 for `std::string_view` in `std::unordered_map::find`
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(SOURCES
@@ -57,14 +57,20 @@ set(SOURCES
     BackgroundWorker.cpp
     DataEngine.cpp
     DataSerializer.cpp
+    Logger.cpp
     HttpServer.cpp
+    StatisticsPrinter.cpp
 )
 
 set(HEADERS
     BackgroundWorker.h
     DataEngine.h
     DataSerializer.h
+    Logger.h
     HttpServer.h
+    StatisticsPrinter.h
+    utils/stdlib.h
+    utils/stl.h
 )
 
 set(CMAKE_FILES
