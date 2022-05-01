@@ -21,6 +21,21 @@ std::optional<DataEngine::ExtendedValue> DataEngine::get(const std::string_view 
     return { std::move(ExtendedValue{iter->second.m_value, {reads, writes}}) };
 }
 
+void DataEngine::initial_set(const std::string_view name, const std::string_view value)
+{
+    const std::shared_lock lock(m_protectData); // read-only lock
+    const auto iter = m_data.find(name);
+    if (iter == m_data.cend())
+    {
+        ExtendedValueInternal extended{ std::string(value), 0, 0 };
+        m_data.emplace(name, std::move(extended));
+    }
+    else
+    {
+        iter->second.m_value = value;
+    }
+}
+
 void DataEngine::set(const std::string_view name, const std::string_view value)
 {
     const std::lock_guard lock(m_protectData); // write lock

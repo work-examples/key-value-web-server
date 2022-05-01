@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include "utils/stdlib.h"
 
+#include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
@@ -19,18 +20,34 @@ namespace
     constexpr size_t StackBufferSize = 32768;
 }
 
-DataSerializer::Document::Document()
+
+class DataSerializerDocument : public rapidjson::Document
 {
-    m_document.SetObject();
+};
+
+
+DataSerializer::Document::Document():
+    m_ptrDocument(std::make_unique<DataSerializerDocument>())
+{
+    m_ptrDocument->SetObject();
 }
+
+DataSerializer::Document::~Document() = default;
 
 void DataSerializer::Document::add(const std::string_view name, const std::string_view value)
 {
     const rapidjson::Document::StringRefType nameRef(name.data(), static_cast<rapidjson::SizeType>(name.size()));
     const rapidjson::Document::StringRefType valueRef(value.data(), static_cast<rapidjson::SizeType>(value.size()));
+    auto& allocator = m_ptrDocument->GetAllocator();
 
-    m_document.AddMember(nameRef, valueRef, m_document.GetAllocator());
+    m_ptrDocument->AddMember(nameRef, valueRef, allocator);
 }
+
+const DataSerializerDocument& DataSerializer::Document::get_internal_document() const
+{
+    return *m_ptrDocument;
+}
+
 
 bool DataSerializer::load(const std::string& filename, const std::function<ItemVisitorProc>& visitor)
 {
@@ -99,7 +116,8 @@ bool DataSerializer::save(const std::string& filename, const Document& document)
     rapidjson::FileWriteStream stream(file.m_file, writeBuffer, sizeof(writeBuffer));
 
     rapidjson::Writer<rapidjson::FileWriteStream> writer(stream);
-    document.get().Accept(writer);
+    const auto& internalDocument = document.get_internal_document();
+    internalDocument.Accept(writer);
 
     file.close();
 

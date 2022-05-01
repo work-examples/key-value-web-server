@@ -4,6 +4,7 @@
 #include <ios>
 #include <mutex>
 #include <sstream>
+#include <string>
 
 
 class Logger

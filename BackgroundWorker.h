@@ -12,7 +12,7 @@ class BackgroundWorker
 public:
     void run(const DataEngine& engine, const std::string& databaseFilename);
 
-    void stop();
+    void stop_notify();
 
 protected:
     std::mutex              m_protect;

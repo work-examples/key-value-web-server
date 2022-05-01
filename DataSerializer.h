@@ -1,10 +1,12 @@
 #pragma once
 
-#include "rapidjson/document.h"
-
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
+
+
+class DataSerializerDocument;
 
 
 class DataSerializer
@@ -16,15 +18,14 @@ public:
     {
     public:
         Document();
+        ~Document();
+
         void add(const std::string_view name, const std::string_view value);
 
-        const rapidjson::Document& get() const
-        {
-            return m_document;
-        }
+        const DataSerializerDocument& get_internal_document() const;
 
     protected:
-        rapidjson::Document m_document;
+        std::unique_ptr<DataSerializerDocument> m_ptrDocument;
     };
 
     static bool load(const std::string& filename, const std::function<ItemVisitorProc>& visitor);

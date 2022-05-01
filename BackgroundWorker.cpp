@@ -10,6 +10,8 @@
 
 void BackgroundWorker::run(const DataEngine& engine, const std::string& databaseFilename)
 {
+    LOG_INFO << "BackgroundWorker: begin" << std::endl;
+
     using namespace std::chrono_literals;
     using clock = std::chrono::high_resolution_clock;
     using time_point = std::chrono::time_point<clock>;
@@ -17,8 +19,6 @@ void BackgroundWorker::run(const DataEngine& engine, const std::string& database
     constexpr auto timeBetweenStatsPrints = 5s;
     constexpr auto timeBetweenDataSaves = 14s;
     static_assert(timeBetweenDataSaves >= timeBetweenStatsPrints);
-
-    LOG_INFO << "BackgroundWorker: started" << std::endl;
 
     StatisticsPrinter printer;
 
@@ -65,15 +65,18 @@ void BackgroundWorker::run(const DataEngine& engine, const std::string& database
         }
     }
 
-    LOG_INFO << "BackgroundWorker: exit" << std::endl;
+    LOG_INFO << "BackgroundWorker: end" << std::endl;
 }
 
-void BackgroundWorker::stop()
+void BackgroundWorker::stop_notify()
 {
-    LOG_INFO << "BackgroundWorker: stop" << std::endl;
+    LOG_INFO << "BackgroundWorker: stop_notify: begin" << std::endl;
+
     {
         const std::lock_guard lock(m_protect);
         m_terminating = true;
     }
     m_conditional.notify_all();
+
+    LOG_INFO << "BackgroundWorker: stop_notify: end" << std::endl;
 }

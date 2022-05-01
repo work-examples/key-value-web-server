@@ -31,6 +31,7 @@ public:
 public:
     std::optional<ExtendedValue> get(const std::string_view name) const;
 
+    void initial_set(const std::string_view name, const std::string_view value); // no statistics update
     void set(const std::string_view name, const std::string_view value);
 
     using EnumerateVisitorProc = void(const std::string_view name, const std::string_view value);
