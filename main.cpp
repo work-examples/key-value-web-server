@@ -15,9 +15,16 @@ int main(void)
 {
     LOG_INFO << "main: begin" << std::endl;
 
+    // =========================================================
+    // ===   Configuration:
+    // =========================================================
+
     const std::string   listenHost = "127.0.0.1";
     const std::uint16_t listenPort = 8000;
     const std::string databaseFilename = "database.json";
+    const bool logEachRequest = false;
+
+    // =========================================================
 
     DataEngine engine;
 
@@ -46,7 +53,7 @@ int main(void)
     LOG_INFO << "main: listening connections: begin" << std::endl;
 
     HttpServer server;
-    server.run(listenHost, listenPort, engine);
+    server.run(listenHost, listenPort, engine, logEachRequest);
 
     LOG_INFO << "main: listening connections: end" << std::endl;
 

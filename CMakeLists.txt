@@ -59,6 +59,7 @@ set(SOURCES
     DataSerializer.cpp
     Logger.cpp
     HttpServer.cpp
+    HttpServerHelpers.cpp
     StatisticsPrinter.cpp
 )
 
@@ -68,32 +69,38 @@ set(HEADERS
     DataSerializer.h
     Logger.h
     HttpServer.h
+    HttpServerHelpers.h
     StatisticsPrinter.h
+)
+
+set(UTILS_HEADERS
     utils/stdlib.h
     utils/stl.h
 )
 
 set(CMAKE_FILES
-     "CMakeLists.txt"
-     "cmake/HunterGate.cmake"
-     "cmake/Hunter/config.cmake"
+    CMakeLists.txt
+    cmake/HunterGate.cmake
+    cmake/Hunter/config.cmake
 )
 
 set(CROWCPP_FILES
-     "dependency/CrowCpp/CMakeLists.txt"
-     "dependency/CrowCpp/LICENSE"
-     "dependency/CrowCpp/README.md"
-     "dependency/CrowCpp/VERSION"
+    dependency/CrowCpp/CMakeLists.txt
+    dependency/CrowCpp/LICENSE
+    dependency/CrowCpp/README.md
+    dependency/CrowCpp/VERSION
 )
 
 file(GLOB_RECURSE CROWCPP_HEADERS
-     "dependency/CrowCpp/*.h"
+    dependency/CrowCpp/*.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${CMAKE_FILES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/dependency/CrowCpp PREFIX CrowCpp FILES ${CROWCPP_HEADERS} ${CROWCPP_FILES})
 
-add_executable(WebServer ${SOURCES} ${HEADERS} ${CMAKE_FILES} ${CROWCPP_HEADERS} ${CROWCPP_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/utils PREFIX utils FILES ${UTILS_HEADERS})
+
+add_executable(WebServer ${SOURCES} ${HEADERS} ${UTILS_HEADERS} ${CMAKE_FILES} ${CROWCPP_HEADERS} ${CROWCPP_FILES})
 
 target_include_directories(WebServer PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 

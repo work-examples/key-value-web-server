@@ -9,8 +9,8 @@ void StatisticsPrinter::print_statistics(const IntegerCounter reads, const Integ
     const IntegerCounter writesDelta = writes - m_previousWrites;
 
     LOG_INFO << "Statistics:"
-        << " last " << secondsElapsed << " seconds: { reads = " << readsDelta << "; writes = " << writesDelta << " }"
         << " total: { reads = " << reads << "; writes = " << writes << " }"
+        << " last " << secondsElapsed << " seconds: { reads = " << readsDelta << "; writes = " << writesDelta << " }"
         << std::endl;
 
     m_previousReads = reads;

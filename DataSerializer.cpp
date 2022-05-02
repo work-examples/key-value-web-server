@@ -10,6 +10,7 @@
 
 #include <cstdio>
 
+
 #ifdef _MSC_VER
 #pragma warning( disable : 4996 ) // warning C4996: 'fopen': This function or variable may be unsafe.
 #endif
@@ -17,7 +18,7 @@
 
 namespace
 {
-    constexpr size_t StackBufferSize = 32768;
+    constexpr size_t FileStreamBufferSize = 32768;
 }
 
 
@@ -58,7 +59,7 @@ bool DataSerializer::load(const std::string& filename, const std::function<ItemV
         return false;
     }
 
-    char readBuffer[StackBufferSize];
+    char readBuffer[FileStreamBufferSize];
     rapidjson::FileReadStream stream(file.m_file, readBuffer, sizeof(readBuffer));
 
     rapidjson::Document doc;
@@ -112,7 +113,7 @@ bool DataSerializer::save(const std::string& filename, const Document& document)
         return false;
     }
 
-    char writeBuffer[StackBufferSize];
+    char writeBuffer[FileStreamBufferSize];
     rapidjson::FileWriteStream stream(file.m_file, writeBuffer, sizeof(writeBuffer));
 
     rapidjson::Writer<rapidjson::FileWriteStream> writer(stream);

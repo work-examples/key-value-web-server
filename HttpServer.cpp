@@ -1,10 +1,7 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS // warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead.
-#endif
-
 #include "HttpServer.h"
 
 #include "DataEngine.h"
+#include "HttpServerHelpers.h"
 #include "Logger.h"
 
 #ifdef _MSC_VER
@@ -15,128 +12,21 @@
 #endif
 // =====================
 #    include "crow/app.h"
-#    include "crow/logging.h"
 // =====================
 #ifdef _MSC_VER
 #  pragma warning( pop )
 #endif
 
 #include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-#include <rapidjson/writer.h>
+#include "rapidjson/stream.h"
 
-#include <cstdio>
-#include <string_view>
+
 #include <thread> // for std::thread::hardware_concurrency()
 
 
 namespace
 {
-    class LogHandler : public crow::ILogHandler
-    {
-    public:
-        virtual void log(std::string message, crow::LogLevel level) override
-        {
-            Logger::LogLevel newLevel = Logger::LogLevel::Critical;
-            switch (level)
-            {
-            case crow::LogLevel::Debug:
-                newLevel = Logger::LogLevel::Debug;
-                break;
-            case crow::LogLevel::Info:
-                newLevel = Logger::LogLevel::Info;
-                break;
-            case crow::LogLevel::Warning:
-                newLevel = Logger::LogLevel::Warning;
-                break;
-            case crow::LogLevel::Error:
-                newLevel = Logger::LogLevel::Error;
-                break;
-            case crow::LogLevel::Critical:
-                newLevel = Logger::LogLevel::Critical;
-                break;
-            }
-
-            Logger::log(message, newLevel);
-        }
-    };
-
-    LogHandler g_logger;
-
-    std::string url_decode(const std::string& value)
-    {
-        const size_t len = value.length();
-
-        std::string result;
-        result.reserve(len);
-
-        for (size_t i = 0; i < len; ++i)
-        {
-            if (value[i] == '+')
-            {
-                result += ' ';
-                continue;
-            }
-            if (value[i] == '%' && i < len - 2)
-            {
-                char buf[] = { value[i + 1], value[i + 2], '\0' };
-                int number = 0;
-                if (EOF != std::sscanf(buf, "%x", &number))
-                {
-                    result += static_cast<char>(number);
-                    i += 2;
-                    continue;
-                }
-            }
-            result += value[i];
-        }
-        return result;
-    }
-
-    class JsonBody: public crow::returnable
-    {
-    public:
-        JsonBody() :
-            crow::returnable("application/json; charset=utf-8"),
-            m_document(rapidjson::Type::kObjectType)
-        {
-        }
-
-        void add(const std::string_view name, const std::string_view value)
-        {
-            const rapidjson::Document::StringRefType nameRef(name.data(), static_cast<rapidjson::SizeType>(name.size()));
-            const rapidjson::Document::StringRefType valueRef(value.data(), static_cast<rapidjson::SizeType>(value.size()));
-            auto& allocator = m_document.GetAllocator();
-            m_document.AddMember(nameRef, valueRef, allocator);
-        }
-
-        void add(const std::string_view name, const std::string& value)
-        {
-            const rapidjson::Document::StringRefType nameRef(name.data(), static_cast<rapidjson::SizeType>(name.size()));
-            const rapidjson::Document::StringRefType valueRef(value.data(), static_cast<rapidjson::SizeType>(value.size()));
-            auto& allocator = m_document.GetAllocator();
-            m_document.AddMember(nameRef, valueRef, allocator);
-        }
-
-        template<typename T>
-        void add(const std::string_view name, const T value)
-        {
-            const rapidjson::Document::StringRefType nameRef(name.data(), static_cast<rapidjson::SizeType>(name.size()));
-            auto& allocator = m_document.GetAllocator();
-            m_document.AddMember(nameRef, value, allocator);
-        }
-
-        virtual std::string dump() const override
-        {
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            m_document.Accept(writer);
-            return { buffer.GetString() , buffer.GetLength() };
-        }
-
-    protected:
-        rapidjson::Document m_document;
-    };
+    HttpServerHelpers::LogHandler g_logger;
 }
 
 
@@ -153,14 +43,14 @@ HttpServer::HttpServer():
 HttpServer::~HttpServer() = default;
 
 
-void HttpServer::run(const std::string& host, const std::uint16_t port, DataEngine& engine)
+void HttpServer::run(const std::string& host, const std::uint16_t port, DataEngine& engine, const bool logEachRequest)
 {
     LOG_INFO << "HttpServer: run: begin" << std::endl;
 
     // Setup global Crow logger:
     crow::logger::setHandler(&g_logger);
 
-    m_ptrApp->loglevel(crow::LogLevel::Info);
+    m_ptrApp->loglevel(logEachRequest ? crow::LogLevel::Info : crow::LogLevel::Warning);
 
     setup_routing(engine);
 
@@ -189,10 +79,10 @@ void HttpServer::setup_routing(DataEngine& engine)
         [&engine](const crow::request& req, const std::string& nameRaw)
         {
             using namespace std::literals;
-            JsonBody body;
+            HttpServerHelpers::JsonBody body;
             try
             {
-                const std::string name = url_decode(nameRaw);
+                const std::string name = HttpServerHelpers::url_decode(nameRaw);
                 body.add("name"sv, name);
 
                 if (name.empty())
@@ -222,14 +112,14 @@ void HttpServer::setup_routing(DataEngine& engine)
     );
 
     // Set value
-    CROW_ROUTE(app, "/api/records/<string>").methods(crow::HTTPMethod::PATCH)(
+    CROW_ROUTE(app, "/api/records/<string>").methods(crow::HTTPMethod::POST)(
         [&engine](const crow::request& req,  const std::string& nameRaw)
         {
             using namespace std::literals;
-            JsonBody body;
+            HttpServerHelpers::JsonBody body;
             try
             {
-                const std::string name = url_decode(nameRaw);
+                const std::string name = HttpServerHelpers::url_decode(nameRaw);
                 body.add("name"sv, name);
 
                 if (name.empty())
@@ -250,11 +140,24 @@ void HttpServer::setup_routing(DataEngine& engine)
 
                 if (!requestDocument.IsObject())
                 {
-                    body.add("error"sv, "Request body JSON must be an Object"sv);
+                    body.add("error"sv, "Request JSON format: root element must be an Object"sv);
                     return crow::response(crow::status::BAD_REQUEST, body);
                 }
 
-                const auto& value = requestDocument["value"];
+                const auto iter = requestDocument.FindMember("value");
+                if (iter == requestDocument.MemberEnd())
+                {
+                    body.add("error"sv, "Request JSON format: root object must have 'value' member"sv);
+                    return crow::response(crow::status::BAD_REQUEST, body);
+                }
+
+                const auto& value = iter->value;
+                if (!value.IsString())
+                {
+                    body.add("error"sv, "Request JSON format: root object's 'value' member must have value of type string"sv);
+                    return crow::response(crow::status::BAD_REQUEST, body);
+                }
+
                 engine.set(name, std::string_view(value.GetString(), value.GetStringLength()));
 
                 return crow::response(crow::status::OK, body);

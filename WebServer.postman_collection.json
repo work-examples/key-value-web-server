@@ -38,7 +38,7 @@
 		{
 			"name": "Set Value",
 			"request": {
-				"method": "PATCH",
+				"method": "POST",
 				"header": [
 					{
 						"key": "Accept",
@@ -47,7 +47,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"value\": \"my value - (a&\\\\+% #/@?$!~\\\"':;\\n<>\\r\\n{}\\t[],.+b)!   \\u003C \\u00d8 \\u0000 \\u24A6 \\u003E\"\r\n}",
+					"raw": "{\r\n    \"value\": \"my value\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

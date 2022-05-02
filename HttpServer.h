@@ -15,7 +15,7 @@ public:
     HttpServer();
     ~HttpServer();
 
-    void run(const std::string& host, const std::uint16_t port, DataEngine& engine);
+    void run(const std::string& host, const std::uint16_t port, DataEngine& engine, const bool logEachRequest);
 
     void stop_notify();
 
