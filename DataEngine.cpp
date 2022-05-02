@@ -8,12 +8,12 @@ std::optional<DataEngine::ExtendedValue> DataEngine::get(const std::string_view 
     const auto iter = m_data.find(name);
     if (iter == m_data.cend())
     {
-        // I don't think we need to increment m_reads here
+        m_reads.fetch_add(1, std::memory_order_acq_rel);
         return {};
     }
 
     // Potentially we can get small inconsistency while copying different statistics values. It is acceptable.
-    const auto reads = iter->second.m_reads.fetch_add(1, std::memory_order_acq_rel);
+    const auto reads = iter->second.m_reads.fetch_add(1, std::memory_order_acq_rel) + 1;
     const auto writes = iter->second.m_writes.load(std::memory_order_acquire);
 
     m_reads.fetch_add(1, std::memory_order_acq_rel);

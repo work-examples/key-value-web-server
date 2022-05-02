@@ -1,0 +1,105 @@
+{
+	"info": {
+		"_postman_id": "caef806d-43b2-4556-be69-52e705e715c6",
+		"name": "KeyValueWebServer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Value",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/records/:name",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"records",
+						":name"
+					],
+					"variable": [
+						{
+							"key": "name",
+							"value": "name 1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Set Value",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"value\": \"my value - (a&\\\\+% #/@?$!~\\\"':;\\n<>\\r\\n{}\\t[],.+b)!   \\u003C \\u00d8 \\u0000 \\u24A6 \\u003E\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/records/:name",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"records",
+						":name"
+					],
+					"variable": [
+						{
+							"key": "name",
+							"value": "name 1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "localhost:8000",
+			"type": "string"
+		}
+	]
+}

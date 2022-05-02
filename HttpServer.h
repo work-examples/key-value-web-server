@@ -15,12 +15,12 @@ public:
     HttpServer();
     ~HttpServer();
 
-    void run(const std::string& host, const std::uint16_t port, const DataEngine& engine);
+    void run(const std::string& host, const std::uint16_t port, DataEngine& engine);
 
     void stop_notify();
 
 protected:
-    void setup_routing(const DataEngine& engine);
+    void setup_routing(DataEngine& engine);
 
     std::unique_ptr<HttpServerApp> m_ptrApp;
 };
