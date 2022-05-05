@@ -23,11 +23,11 @@ VALUE_NAMES = [
 ]
 
 COUNT_OF_OPERATIONS_PER_PROCESS = 10_000
-COUNT_OF_PROCESSES = multiprocessing.cpu_count()
+COUNT_OF_PROCESSES = 1  # multiprocessing.cpu_count()
 
 PERCENT_OF_WRITES = 1
 
-LOG_EVERY_REQUEST = False
+LOG_EVERY_REQUEST = True
 
 # =======================================
 
@@ -47,27 +47,37 @@ def one_request(conn: http.client.HTTPConnection) -> None:
         'Accept': 'application/json',
     }
 
-    if writing:
-        new_value = f'val_{random.randint(1000, 1000_000_000)}'
+    while True:  # retry connection loop
+        try:
+            if writing:
+                new_value = f'val_{random.randint(1000, 1000_000_000)}'
 
-        data = {"value": new_value}
+                data = {"value": new_value}
 
-        if LOG_EVERY_REQUEST:
-            print('====================================================')
-            print(f'POST {url}: {data}')
+                if LOG_EVERY_REQUEST:
+                    print('====================================================')
+                    print(f'POST {url}: {data}')
 
-        request_body_bytes = json.dumps(data, indent=2, sort_keys=True).encode(encoding='utf8')
-        conn.request(method='POST', url=url, body=request_body_bytes, headers=headers_post)
-    else:
-        if LOG_EVERY_REQUEST:
-            print(f'GET {url}')
-        conn.request(method='GET', url=url, headers=headers_get)
+                request_body_bytes = json.dumps(data, indent=2, sort_keys=True).encode(encoding='utf8')
+                conn.request(method='POST', url=url, body=request_body_bytes, headers=headers_post)
+            else:
+                if LOG_EVERY_REQUEST:
+                    print(f'GET {url}')
+                conn.request(method='GET', url=url, headers=headers_get)
 
-    response = conn.getresponse()
-    if LOG_EVERY_REQUEST:
-        print(f'REPLY: {response.status} {response.reason}')
+            response = conn.getresponse()
+            if LOG_EVERY_REQUEST:
+                print(f'REPLY: {response.status} {response.reason}')
 
-    body_bytes = response.read()
+            body_bytes = response.read()
+
+            break  # exit infinite retry connection loop
+        except ConnectionError as error:
+            print('Failed making HTTP request: ', repr(error))
+            conn.close()
+            sleep_duration_sec = 5.0
+            print(f'Retry after sleeping {sleep_duration_sec} seconds...')
+            time.sleep(sleep_duration_sec)
 
     if response.status not in (200, 404):
         print(f'RAW_REPLY_BODY: {body_bytes}')
@@ -113,10 +123,10 @@ def main() -> None:
     print('main: end')
 
 
-def main_owner() -> None:
-    print(f'main_owner: start {COUNT_OF_PROCESSES} child processes')
+def spawn_processes(process_count) -> None:
+    print(f'spawn_processes: start {process_count} child processes')
 
-    pool = [multiprocessing.Process(target=main, args=()) for _ in range(COUNT_OF_PROCESSES)]
+    pool = [multiprocessing.Process(target=main, args=()) for _ in range(process_count)]
 
     begin = time.perf_counter()
 
@@ -125,17 +135,20 @@ def main_owner() -> None:
 
     for process in pool:
         process.join()
-        print('Child process finished')
+        print('spawn_processes: Child process finished')
 
     end = time.perf_counter()
     elapsed = max(end - begin, 0.001)
-    operation_count = COUNT_OF_OPERATIONS_PER_PROCESS * COUNT_OF_PROCESSES
+    operation_count = COUNT_OF_OPERATIONS_PER_PROCESS * process_count
     ops_per_sec = int(operation_count / elapsed)
 
-    print(f'main_owner: It took {elapsed:.3f} seconds to execute {operation_count} requests; {ops_per_sec} requests per second')
+    print(f'spawn_processes: It took {elapsed:.3f} seconds to execute {operation_count} requests; {ops_per_sec} requests per second')
 
-    print('main_owner: end')
+    print('spawn_processes: end')
 
 
 if __name__ == '__main__':
-    main_owner()
+    if COUNT_OF_PROCESSES == 1:
+        main()
+    else:
+        spawn_processes(COUNT_OF_PROCESSES)

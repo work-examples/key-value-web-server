@@ -3,7 +3,11 @@
 An HTTP web server with a REST API for persistent key-value storage.
 Collects read-write statistics for the entire storage and for each key.
 
-## Test Task for a C++ Programmer
+**Language**: `C++20`  
+**Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`  
+**Software requirements**: `CMake 3.2+`, C++20 compatible compiler, `Python 3.7+`
+
+## Test Task Description
 
 You need to write two applications, a client and a server, that communicate with each other.
 
@@ -172,7 +176,7 @@ Reply body example:
 CPU Intel Core i5 (8th gen), mobile version, 8 logical cores.  
 Visual Studio 2019 (v16.11.13), Release build  
 Windows 10 Version 21H1 (Build 19043.1645)  
-Number of HTTP server threads: 8
+Number of HTTP server threads: 8  
 Logging of every request is disabled for both server and client side.
 
 ### Results

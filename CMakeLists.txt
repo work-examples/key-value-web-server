@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.15) # 3.2 for Hunter; 3.15 for MSVC_RUNTIME_LIBRARY
+set(CMAKE_POLICY_DEFAULT_CMP0126 OLD) # for Hunter # New in version 3.21
+
 # ====================================
 
 set(CMAKE_MESSAGE_LOG_LEVEL         "VERBOSE"          CACHE STRING "Log verbosity (STATUS | VERBOSE | DEBUG | TRACE)")
@@ -8,9 +11,6 @@ set(DEPS_REQUIRED_RAPIDJSON_VERSION "1.1.0-b557259-p0" CACHE STRING "Required pa
 # ====================================
 # Setup Hunter package manager
 # ====================================
-
-cmake_minimum_required(VERSION 3.2) # for Hunter
-set(CMAKE_POLICY_DEFAULT_CMP0126 OLD) # for Hunter # New in version 3.21
 
 option(HUNTER_NO_TOOLCHAIN_ID_RECALCULATION "No Toolchain-ID recalculation" OFF)
 
@@ -105,5 +105,8 @@ add_executable(WebServer ${SOURCES} ${HEADERS} ${UTILS_HEADERS} ${CMAKE_FILES} $
 target_include_directories(WebServer PRIVATE ${RAPIDJSON_INCLUDE_DIRS})
 
 target_link_libraries(WebServer PRIVATE Crow)
+
+# Link to CRT statically in MSVC:
+set_property(TARGET WebServer PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # ====================================

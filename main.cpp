@@ -22,7 +22,7 @@ int main(void)
     const std::string   listenHost = "127.0.0.1";
     const std::uint16_t listenPort = 8000;
     const std::string databaseFilename = "database.json";
-    const bool logEachRequest = false;
+    const bool logEachRequest = true;
 
     // =========================================================
 
