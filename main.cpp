@@ -11,9 +11,10 @@
 #include <thread>
 
 
-int main(void)
+int main(const int argc, const char * const * const argv)
 {
     LOG_INFO << "main: begin" << std::endl;
+    const std::string arg1 = argc > 1 ? argv[1] : "";
 
     // =========================================================
     // ===   Configuration:
@@ -21,8 +22,8 @@ int main(void)
 
     const std::string   listenHost = "127.0.0.1";
     const std::uint16_t listenPort = 8000;
-    const std::string databaseFilename = "database.json";
-    const bool logEachRequest = true;
+    const std::string   databaseFilename = "database.json";
+    const bool          logEachRequest = arg1 != "--no-logs";
 
     // =========================================================
 

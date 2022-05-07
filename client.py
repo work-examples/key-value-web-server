@@ -4,6 +4,7 @@ import json
 import http.client
 import multiprocessing
 import random
+import sys
 import time
 import urllib.parse
 
@@ -27,7 +28,9 @@ COUNT_OF_PROCESSES = 1  # multiprocessing.cpu_count()
 
 PERCENT_OF_WRITES = 1
 
-LOG_EVERY_REQUEST = True
+arg1 = sys.argv[1] if len(sys.argv) > 1 else ''
+
+LOG_EVERY_REQUEST = arg1 != '--no-logs'
 
 # =======================================
 

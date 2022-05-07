@@ -185,6 +185,13 @@ Windows 10 Version 21H1 (Build 19043.1645)
 Number of HTTP server threads: 8  
 Logging of every request is disabled for both server and client side.
 
+Starting applications without logging messages for every HTTP request:
+
+```bash
+WebServer.exe --no-logs
+Client.exe --no-logs
+```
+
 ### Results
 
 | Number of <br/>request threads | 10K requests <br/>per thread, req/sec | 100K requests <br/>per thread, req/sec |
