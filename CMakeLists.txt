@@ -109,4 +109,7 @@ target_link_libraries(WebServer PRIVATE Crow)
 # Link to CRT statically in MSVC:
 set_property(TARGET WebServer PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+# Added to simplify detection build artifacts by CI
+install(TARGETS WebServer RUNTIME DESTINATION .)
+
 # ====================================
