@@ -3,9 +3,11 @@
 
 std::optional<DataEngine::ExtendedValue> DataEngine::get(const std::string_view name) const
 {
+    const std::string strName(name);
+
     const std::shared_lock lock(m_protectData); // read-only lock
 
-    const auto iter = m_data.find(name);
+    const auto iter = m_data.find(strName);
     if (iter == m_data.cend())
     {
         m_reads.fetch_add(1, std::memory_order_acq_rel);
@@ -23,12 +25,15 @@ std::optional<DataEngine::ExtendedValue> DataEngine::get(const std::string_view 
 
 void DataEngine::initial_set(const std::string_view name, const std::string_view value)
 {
+    std::string strName(name);
+
     const std::shared_lock lock(m_protectData); // read-only lock
-    const auto iter = m_data.find(name);
+
+    const auto iter = m_data.find(strName);
     if (iter == m_data.cend())
     {
         ExtendedValueInternal extended{ std::string(value), 0, 0 };
-        m_data.emplace(name, std::move(extended));
+        m_data.emplace(std::move(strName), std::move(extended));
     }
     else
     {
@@ -38,13 +43,15 @@ void DataEngine::initial_set(const std::string_view name, const std::string_view
 
 void DataEngine::set(const std::string_view name, const std::string_view value)
 {
+    std::string strName(name);
+
     const std::lock_guard lock(m_protectData); // write lock
 
-    const auto iter = m_data.find(name);
+    const auto iter = m_data.find(strName);
     if (iter == m_data.cend())
     {
         ExtendedValueInternal extended{ std::string(value), 0, 1 };
-        m_data.emplace(name, std::move(extended));
+        m_data.emplace(std::move(strName), std::move(extended));
     }
     else
     {

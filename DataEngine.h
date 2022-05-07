@@ -1,7 +1,5 @@
 #pragma once
 
-#include "utils/stl.h"
-
 #include <atomic>
 #include <cstdint>
 #include <functional>
@@ -9,6 +7,7 @@
 #include <shared_mutex>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 
 class DataEngine
@@ -63,7 +62,7 @@ protected:
         AtomicCounter           m_writes = ATOMIC_VAR_INIT(0);
     };
 
-    using DataCollection = stl_extra::string_unordered_map<ExtendedValueInternal>;
+    using DataCollection = std::unordered_map<std::string, ExtendedValueInternal>;
     mutable std::shared_mutex   m_protectData;
     DataCollection              m_data;
 

@@ -3,9 +3,9 @@
 An HTTP web server with a REST API for persistent key-value storage.
 Collects read-write statistics for the entire storage and for each key.
 
-**Language**: `C++20`  
+**Language**: `C++17`  
 **Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`  
-**Software requirements**: `CMake 3.2+`, C++20 compatible compiler, `Python 3.7+`
+**Software requirements**: `CMake 3.2+`, C++17 compatible compiler, `Python 3.7+`  
 
 ## Test Task Description
 
@@ -108,7 +108,6 @@ It also speeds up compilation by limiting the number of `.cpp` files
 compiled with included complex C++ templates.
 
 The solution also makes heavy use of move semantics.
-It uses `std::string_view` instead of `std::string` for speed up.
 
 ## Compile and Run
 

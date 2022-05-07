@@ -9,6 +9,12 @@ set(DEPS_REQUIRED_BOOST_VERSION     "1.78.0"           CACHE STRING "Required pa
 set(DEPS_REQUIRED_RAPIDJSON_VERSION "1.1.0-b557259-p0" CACHE STRING "Required package version")
 
 # ====================================
+
+# Set required C++ standard
+set(CMAKE_CXX_STANDARD 17)  # C++17 for `std::optional` & etc
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+# ====================================
 # Setup Hunter package manager
 # ====================================
 
@@ -47,10 +53,6 @@ find_package(RapidJSON CONFIG REQUIRED)
 message(VERBOSE "RapidJSON_VERSION: ${RapidJSON_VERSION}")
 
 # ====================================
-
-# Set required C++ standard
-set(CMAKE_CXX_STANDARD 20) # C++17 for `std::optional` & etc; c++20 for `std::string_view` in `std::unordered_map::find`
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(SOURCES
     main.cpp
