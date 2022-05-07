@@ -6,6 +6,7 @@ Collects read-write statistics for the entire storage and for each key.
 **Language**: `C++17`  
 **Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`  
 **Software requirements**: `CMake 3.2+`, C++17 compatible compiler, `Python 3.7+`  
+**Operation systems**: `Windows`, `Linux`, `macOS`
 
 ## Test Task Description
 
@@ -123,7 +124,7 @@ Database file example:
 Client application is run this way. It needs python3 and has no external dependencies.
 
 ```bash
-python client.py
+python3 client.py
 ```
 
 ## Web API

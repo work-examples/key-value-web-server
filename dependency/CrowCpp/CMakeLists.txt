@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.15.0 FATAL_ERROR)
 
 # Define the project name and language
 project(Crow
-	LANGUAGES CXX
+    LANGUAGES CXX
 )
 
 # Set required C++ standard
@@ -31,9 +31,9 @@ add_library(Crow INTERFACE)
 add_library(Crow::Crow ALIAS Crow)
 
 target_include_directories(Crow
-	INTERFACE
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:include>
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 find_package(Boost 1.64 COMPONENTS system date_time REQUIRED)
@@ -42,21 +42,21 @@ message(VERBOSE "Boost_VERSION: ${Boost_VERSION}")
 find_package(Threads REQUIRED)
 
 target_link_libraries(Crow
-	INTERFACE
-		Boost::boost Boost::system Boost::date_time
-		Threads::Threads
+    INTERFACE
+        Boost::boost Boost::system Boost::date_time
+        Threads::Threads
 )
 
 if(CROW_ENABLE_COMPRESSION)
-	find_package(ZLIB REQUIRED)
-	target_link_libraries(Crow INTERFACE ZLIB::ZLIB)
-	target_compile_definitions(Crow INTERFACE CROW_ENABLE_COMPRESSION)
+    find_package(ZLIB REQUIRED)
+    target_link_libraries(Crow INTERFACE ZLIB::ZLIB)
+    target_compile_definitions(Crow INTERFACE CROW_ENABLE_COMPRESSION)
 endif()
 
 if(CROW_ENABLE_SSL)
-	find_package(OpenSSL REQUIRED)
-	target_link_libraries(Crow INTERFACE OpenSSL::SSL)
-	target_compile_definitions(Crow INTERFACE CROW_ENABLE_SSL)
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(Crow INTERFACE OpenSSL::SSL)
+    target_compile_definitions(Crow INTERFACE CROW_ENABLE_SSL)
 endif()
 
 #####################################

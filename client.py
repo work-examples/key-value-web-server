@@ -118,7 +118,10 @@ def main() -> None:
 
     conn.close()
 
-    print(f'main: It took {elapsed:.3f} seconds to execute {operation_count} requests; {ops_per_sec} requests per second')
+    print(
+        f'main: It took {elapsed:.3f} seconds to execute {operation_count} requests;'
+        f' {ops_per_sec} requests per second'
+    )
 
     print('main: end')
 
@@ -142,7 +145,10 @@ def spawn_processes(process_count) -> None:
     operation_count = COUNT_OF_OPERATIONS_PER_PROCESS * process_count
     ops_per_sec = int(operation_count / elapsed)
 
-    print(f'spawn_processes: It took {elapsed:.3f} seconds to execute {operation_count} requests; {ops_per_sec} requests per second')
+    print(
+        f'spawn_processes: It took {elapsed:.3f} seconds to execute {operation_count} requests;'
+        f' {ops_per_sec} requests per second'
+    )
 
     print('spawn_processes: end')
 
