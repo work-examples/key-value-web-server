@@ -11,6 +11,7 @@ env:
   CMAKE_VERSION: 3.23.0
   NINJA_VERSION: 1.10.2
   CCACHE_VERSION: 4.6
+  PYTHON_VERSION: 3.9  # we can use any starting from 3.7 which is first supported by PyInstaller
   BUILD_TYPE: Release
 
 jobs:
@@ -62,6 +63,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies (pip)
+        shell: sh
+        run: |
+          python -m pip install --upgrade -- pip
+          pip install --requirement=requirements.txt
 
       - name: Download Ninja and CMake
         shell: cmake -P {0}

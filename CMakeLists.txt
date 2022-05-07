@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.15) # 3.2 for Hunter; 3.15 for MSVC_RUNTIME_LIBRARY
-set(CMAKE_POLICY_DEFAULT_CMP0126 OLD) # for Hunter # New in version 3.21
+cmake_minimum_required(VERSION 3.19)
+# Requirements: 3.2 for Hunter; 3.15 for MSVC_RUNTIME_LIBRARY; 3.19 for less dependencies (CMP0112)
+# CMP0112: Now target file component generator expressions do not add target dependencies. # New in version 3.19.
 
 # ====================================
 
@@ -18,13 +19,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 # Setup Hunter package manager
 # ====================================
 
-option(HUNTER_NO_TOOLCHAIN_ID_RECALCULATION "No Toolchain-ID recalculation" OFF)
-
 include("cmake/HunterGate.cmake")
 
 HunterGate(
-    URL "https://github.com/cpp-pm/hunter/archive/v0.24.1.tar.gz"
-    SHA1 "4942227a6e6f5e64414c55b97ef98609de199d18"
+    URL "https://github.com/cpp-pm/hunter/archive/v0.24.2.tar.gz"
+    SHA1 "17fd3b9f0b8c271eac9b71e30a6aa1b9fecab299"
     LOCAL # load cmake/Hunter/config.cmake
 )
 
@@ -52,6 +51,8 @@ cmake_policy(SET CMP0074 NEW) # for RapidJSON
 find_package(RapidJSON CONFIG REQUIRED)
 message(VERBOSE "RapidJSON_VERSION: ${RapidJSON_VERSION}")
 
+# ====================================
+# === WebServer application
 # ====================================
 
 set(SOURCES
@@ -113,5 +114,37 @@ set_property(TARGET WebServer PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CO
 
 # Added to simplify detection build artifacts by CI
 install(TARGETS WebServer RUNTIME DESTINATION .)
+
+# ====================================
+# === Client application
+# ====================================
+
+set(CLIENT_BASENAME Client)
+set(CLIENT_EXECUTABLE ${CLIENT_BASENAME})
+if (WIN32)
+    set(CLIENT_EXECUTABLE ${CLIENT_BASENAME}.exe)
+endif()
+
+add_custom_target(WebClient ALL
+    COMMENT "Compile Python script to executable file"
+    COMMAND python --version
+    COMMAND pyinstaller --version
+    COMMAND pyinstaller
+        --distpath="${CMAKE_CURRENT_BINARY_DIR}"
+        --name="${CLIENT_BASENAME}"
+        --workpath="${CMAKE_CURRENT_BINARY_DIR}/Client.dir/pyinstaller_work"
+        --specpath="${CMAKE_CURRENT_BINARY_DIR}/Client.dir/pyinstaller_spec"
+        --noconfirm
+        --onefile
+        --console
+        --noupx
+        -- "${CMAKE_CURRENT_SOURCE_DIR}/client.py"
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/client.py
+    BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/${CLIENT_EXECUTABLE}
+    )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${CLIENT_EXECUTABLE} DESTINATION .)
+
+install(FILES client.py DESTINATION .)
 
 # ====================================

@@ -4,7 +4,7 @@ An HTTP web server with a REST API for persistent key-value storage.
 Collects read-write statistics for the entire storage and for each key.
 
 **Language**: `C++17`  
-**Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`  
+**Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`, `PyInstaller` (optional)  
 **Software requirements**: `CMake 3.2+`, C++17 compatible compiler, `Python 3.7+`  
 **Operation systems**: `Windows`, `Linux`, `macOS`
 
@@ -122,6 +122,7 @@ Database file example:
 [database.example.json](database.example.json)
 
 Client application is run this way. It needs python3 and has no external dependencies.
+CI is also preparing `Client.exe` executable which is a compiled version of `client.py` with Python inside.
 
 ```bash
 python3 client.py
