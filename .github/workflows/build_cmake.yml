@@ -1,12 +1,17 @@
+---
+# Original source URL of `build_cmake.yml`:
+# https://github.com/cristianadam/HelloWorld/blob/c4d9676dc11927936d7840cf60d33af6f53ba62e/.github/workflows/build_cmake.yml
+
 name: CMake Build Matrix
 
-on: [ push, pull_request ]
+on: [ push, pull_request ] # yamllint disable-line rule:truthy
 
 env:
+  PROJECT_NAME: webserver
   CMAKE_VERSION: 3.23.0
   NINJA_VERSION: 1.10.2
-  BUILD_TYPE: Release
   CCACHE_VERSION: 4.6
+  BUILD_TYPE: Release
 
 jobs:
   build:
@@ -17,25 +22,42 @@ jobs:
       matrix:
         config:
           - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: windows-latest,
-            cc: "cl", cxx: "cl",
-            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+            name: "Windows 2019 - Visual Studio 2019 - MSVC 2019", artifact: "windows-msvc.7z",
+            os: windows-2019,
+            generator: "Visual Studio 16 2019",
+            multiconfig: true
+          }
+          # MinGW is disabled since Hunter is trying to pass MSVC compiler options to gcc compiler when building Boost:
+          # g++.exe: error: /MT: No such file or directory
+          # - {
+          #     name: "Windows 2022 - MinGW Makefiles - MinGW 8.1", artifact: "windows-mingw.7z",
+          #     os: windows-2022,
+          #     generator: "MinGW Makefiles",
+          #     multiconfig: false
+          #  }
+          - {
+            name: "Ubuntu 20.04 - Unix Makefiles - GCC 9.4", artifact: "linux-makefiles-gcc.7z",
+            os: ubuntu-20.04,
+            generator: "Unix Makefiles",
+            multiconfig: false
           }
           - {
-            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-            os: windows-latest,
-            cc: "gcc", cxx: "g++"
+            name: "Ubuntu 20.04 - Ninja - GCC 9.4", artifact: "linux-ninja-gcc.7z",
+            os: ubuntu-20.04,
+            generator: "Ninja",
+            multiconfig: false
           }
           - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.7z",
-            os: ubuntu-latest,
-            cc: "gcc", cxx: "g++"
+            name: "macOS 11 - Xcode - Clang 13.0", artifact: "macos-xcode-clang.7z",
+            os: macos-11,
+            generator: "Xcode",
+            multiconfig: true
           }
           - {
-            name: "macOS Latest Clang", artifact: "macOS.7z",
-            os: macos-latest,
-            cc: "clang", cxx: "clang++"
+            name: "macOS 11 - Ninja - Clang 13.0", artifact: "macos-ninja-clang.7z",
+            os: macos-11,
+            generator: "Ninja",
+            multiconfig: false
           }
 
     steps:
@@ -63,26 +85,45 @@ jobs:
             set(cmake_dir "cmake-${cmake_version}-macos-universal/CMake.app/Contents/bin")
           endif()
 
-          set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
-          file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip)
-          
-          set(cmake_url "https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-${cmake_suffix}")
-          file(DOWNLOAD "${cmake_url}" ./cmake.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./cmake.zip)
+          file(MAKE_DIRECTORY $ENV{RUNNER_TEMP}/bin)
+
+          set(ninja_url
+            "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}"
+          )
+          file(DOWNLOAD "${ninja_url}" $ENV{RUNNER_TEMP}/ninja.zip SHOW_PROGRESS)
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            WORKING_DIRECTORY "$ENV{RUNNER_TEMP}/bin"
+            COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{RUNNER_TEMP}/ninja.zip"
+          )
+
+          set(cmake_repo "https://github.com/Kitware/CMake")
+          set(cmake_url
+            "${cmake_repo}/releases/download/v${cmake_version}/cmake-${cmake_version}-${cmake_suffix}"
+          )
+          file(DOWNLOAD "${cmake_url}" $ENV{RUNNER_TEMP}/cmake.zip SHOW_PROGRESS)
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            WORKING_DIRECTORY "$ENV{RUNNER_TEMP}"
+            COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{RUNNER_TEMP}/cmake.zip"
+          )
 
           # Add to PATH environment variable
-          file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
+          file(TO_CMAKE_PATH "$ENV{RUNNER_TEMP}/${cmake_dir}" cmake_dir)
           set(path_separator ":")
           if ("${{ runner.os }}" STREQUAL "Windows")
             set(path_separator ";")
           endif()
-          file(APPEND "$ENV{GITHUB_PATH}" "$ENV{GITHUB_WORKSPACE}${path_separator}${cmake_dir}")
+          file(APPEND "$ENV{GITHUB_PATH}" "$ENV{RUNNER_TEMP}/bin${path_separator}${cmake_dir}")
 
           if (NOT "${{ runner.os }}" STREQUAL "Windows")
             execute_process(
-              COMMAND chmod +x ninja
-              COMMAND chmod +x ${cmake_dir}/cmake
+              COMMAND_ECHO STDOUT
+              COMMAND_ERROR_IS_FATAL ANY
+              COMMAND chmod +x "$ENV{RUNNER_TEMP}/bin/ninja"
+              COMMAND chmod +x "${cmake_dir}/cmake"
             )
           endif()
 
@@ -90,57 +131,57 @@ jobs:
         id: ccache
         shell: cmake -P {0}
         run: |
-          set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
-          file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
+          set(ccache_url
+            "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz"
+          )
+          file(DOWNLOAD "${ccache_url}" $ENV{RUNNER_TEMP}/ccache.tar.xz SHOW_PROGRESS)
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            WORKING_DIRECTORY "$ENV{RUNNER_TEMP}/bin"
+            COMMAND ${CMAKE_COMMAND} -E tar xvf "$ENV{RUNNER_TEMP}/ccache.tar.xz"
+          )
 
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: cmake -P {0}
-        run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
-
-      - name: ccache cache files
-        uses: actions/cache@v2
+      - name: Set up ccache cache files
+        uses: actions/cache@v3
         with:
-          path: .ccache
-          key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: ${{ runner.temp }}/.ccache
+          key: ${{ matrix.config.name }}-${{ env.BUILD_TYPE }}-ccache-${{ github.sha }}
           restore-keys: |
-            ${{ matrix.config.name }}-ccache-
+            ${{ matrix.config.name }}-${{ env.BUILD_TYPE }}-ccache-
+
+      - name: Set up cache directory for Hunter package manager
+        uses: actions/cache@v3
+        with:
+          path: ${{ runner.temp }}/.hunter-cache
+          key: ${{ matrix.config.name }}-hunter-v1-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          restore-keys: |
+            ${{ matrix.config.name }}-hunter-v1
 
       - name: Configure
         shell: cmake -P {0}
         run: |
-          set(ENV{CC} ${{ matrix.config.cc }})
-          set(ENV{CXX} ${{ matrix.config.cxx }})
-
-          if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-            execute_process(
-              COMMAND "${{ matrix.config.environment_script }}" && set
-              OUTPUT_FILE environment_script_output.txt
-            )
-            file(STRINGS environment_script_output.txt output_lines)
-            foreach(line IN LISTS output_lines)
-              if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-                set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-              endif()
-            endforeach()
-          endif()
+          set(ENV{HUNTER_ROOT} $ENV{RUNNER_TEMP}/.hunter-cache)
+          message(STATUS "HUNTER_ROOT: $ENV{HUNTER_ROOT}")
 
           set(path_separator ":")
           if ("${{ runner.os }}" STREQUAL "Windows")
             set(path_separator ";")
           endif()
-          set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
+          set(ENV{PATH} "$ENV{RUNNER_TEMP}/bin${path_separator}$ENV{PATH}")
+
+          set(select_build_type_arg "")
+          if ("${{ matrix.config.multiconfig }}" STREQUAL "false")
+            set(select_build_type_arg "-D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}")
+          endif()
 
           execute_process(
+            COMMAND_ECHO STDOUT
             COMMAND cmake
               -S .
-              -B build
-              -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-              -G Ninja
-              -D CMAKE_MAKE_PROGRAM=ninja
+              -B "$ENV{RUNNER_TEMP}/build"
+              ${select_build_type_arg}
+              -G "${{ matrix.config.generator }}"
               -D CMAKE_C_COMPILER_LAUNCHER=ccache
               -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
             RESULT_VARIABLE result
@@ -154,16 +195,7 @@ jobs:
         run: |
           set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
 
-          if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-            file(STRINGS environment_script_output.txt output_lines)
-            foreach(line IN LISTS output_lines)
-              if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-                set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-              endif()
-            endforeach()
-          endif()
-
-          file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
+          file(TO_CMAKE_PATH "$ENV{RUNNER_TEMP}" ccache_basedir)
           set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
           set(ENV{CCACHE_DIR} "${ccache_basedir}/.ccache")
           set(ENV{CCACHE_COMPRESS} "true")
@@ -173,11 +205,27 @@ jobs:
             set(ENV{CCACHE_MAXSIZE} "600M")
           endif()
 
-          execute_process(COMMAND ccache -p)
-          execute_process(COMMAND ccache -z)
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            COMMAND ccache -p
+          )
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            COMMAND ccache -z
+          )
+
+          set(select_config_arg "")
+          if ("${{ matrix.config.multiconfig }}" STREQUAL "true")
+            set(select_config_arg "--config $ENV{BUILD_TYPE}")
+          endif()
 
           execute_process(
-            COMMAND cmake --build build
+            COMMAND_ECHO STDOUT
+            COMMAND cmake
+              --build "$ENV{RUNNER_TEMP}/build"
+              ${select_config_arg}
             RESULT_VARIABLE result
             OUTPUT_VARIABLE output
             ERROR_VARIABLE output
@@ -193,11 +241,15 @@ jobs:
       - name: ccache statistics
         shell: cmake -P {0}
         run: |
-          file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
+          file(TO_CMAKE_PATH "$ENV{RUNNER_TEMP}" ccache_basedir)
           set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
           set(ENV{CCACHE_DIR} "${ccache_basedir}/.ccache")
 
-          execute_process(COMMAND ccache -s)
+          execute_process(
+            COMMAND_ECHO STDOUT
+            COMMAND_ERROR_IS_FATAL ANY
+            COMMAND ccache -s
+          )
 
       - name: Run tests
         shell: cmake -P {0}
@@ -208,8 +260,9 @@ jobs:
           set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
           execute_process(
-            COMMAND ctest -j ${N}
-            WORKING_DIRECTORY build
+            COMMAND_ECHO STDOUT
+            COMMAND ctest -j "${N}"
+            WORKING_DIRECTORY "$ENV{RUNNER_TEMP}/build"
             RESULT_VARIABLE result
             OUTPUT_VARIABLE output
             ERROR_VARIABLE output
@@ -222,23 +275,28 @@ jobs:
             message(FATAL_ERROR "Running tests failed!")
           endif()
 
-      - name: Install Strip
-        run: cmake --install build --prefix instdir --strip
+      - name: Install with Strip
+        shell: sh
+        run: cmake --install "$RUNNER_TEMP/build" --prefix "$RUNNER_TEMP/instdir" --strip
 
       - name: Pack
-        working-directory: instdir
-        run: cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
+        working-directory: ${{ runner.temp }}/instdir
+        shell: sh
+        run: cmake -E tar cfv "$RUNNER_TEMP/${{ matrix.config.artifact }}" --format=7zip -- .
 
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: ./${{ matrix.config.artifact }}
-          name: ${{ matrix.config.artifact }}
+          path: ${{ runner.temp }}/${{ matrix.config.artifact }}
+          name: ${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
 
   release:
+    name: Create Release for ${{ github.ref }}
     if: contains(github.ref, 'tags/v')
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: write
 
     steps:
       - name: Create Release
@@ -253,6 +311,7 @@ jobs:
           prerelease: false
 
       - name: Store Release url
+        shell: sh
         run: |
           echo "${{ steps.create_release.outputs.upload_url }}" > ./upload_url
 
@@ -263,35 +322,40 @@ jobs:
 
   publish:
     if: contains(github.ref, 'tags/v')
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: Publish Release Artifacts from ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: write
+
     strategy:
       fail-fast: false
       matrix:
         config:
           - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: ubuntu-latest
+            name: "Windows 2019 - Visual Studio 2019 - MSVC 2019", artifact: "windows-msvc.7z"
+          }
+          # - {
+          #     name: "Windows 2022 - MinGW Makefiles - MinGW 8.1", artifact: "windows-mingw.7z"
+          #   }
+          - {
+            name: "Ubuntu 20.04 - Unix Makefiles - GCC 9.4", artifact: "linux-makefiles-gcc.7z"
           }
           - {
-            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-            os: ubuntu-latest
+            name: "Ubuntu 20.04 - Ninja - GCC 9.4", artifact: "linux-ninja-gcc.7z"
           }
           - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.7z",
-            os: ubuntu-latest
+            name: "macOS 11 - Xcode - Clang 13.0", artifact: "macos-xcode-clang.7z"
           }
           - {
-            name: "macOS Latest Clang", artifact: "macOS.7z",
-            os: ubuntu-latest
+            name: "macOS 11 - Ninja - Clang 13.0", artifact: "macos-ninja-clang.7z"
           }
-    needs: release
 
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.config.artifact }}
+          name: "${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}"
           path: ./
 
       - name: Download URL
@@ -299,7 +363,9 @@ jobs:
         with:
           name: upload_url
           path: ./
+
       - id: set_upload_url
+        shell: sh
         run: |
           upload_url=`cat ./upload_url`
           echo ::set-output name=upload_url::$upload_url
@@ -312,5 +378,5 @@ jobs:
         with:
           upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
           asset_path: ./${{ matrix.config.artifact }}
-          asset_name: ${{ matrix.config.artifact }}
-          asset_content_type: application/x-gtar
+          asset_name: ${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
+          asset_content_type: application/x-7z-compressed
