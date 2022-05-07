@@ -1,0 +1,7 @@
+# Normalize files' EOL during checkin in case people don't have core.autocrlf set.
+# More details: https://mirrors.edge.kernel.org/pub/software/scm/git/docs/gitattributes.html
+* text=auto
+
+# yamllint required LF line endings:
+*.yml       text eol=lf
+*.yaml      text eol=lf

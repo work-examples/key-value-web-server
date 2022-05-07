@@ -1,0 +1,32 @@
+# Universal config for text editors
+# https://EditorConfig.org
+
+# top-most EditorConfig file
+# Set to true to stop .editorconfig files search on current file.
+root = true
+
+[*]
+insert_final_newline = true
+charset = utf-8
+
+[{Makefile, Makefile.*, *.mk}]
+indent_style = tab
+indent_size = 4
+
+[{*.py, *.pyi}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+[{*.yml, *.yaml}]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+end_of_line = lf
+ij_yaml_spaces_within_brackets = true
+# ij_yaml_block_mapping_on_new_line = true
+
+[*.md]
+indent_style = space
+indent_size = 4
+max_line_length = 140
