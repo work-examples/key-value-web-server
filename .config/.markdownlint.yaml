@@ -1,0 +1,25 @@
+# Manual for `.markdownlint.yaml` config:
+# https://github.com/DavidAnson/markdownlint#optionsconfig
+# Config file JSON schema:
+# https://github.com/DavidAnson/markdownlint/blob/main/schema/markdownlint-config-schema.json
+---
+default: true
+
+# Trailing spaces
+MD009:
+  br_spaces: 2
+
+# Line length
+MD013:
+  line_length: 140
+  code_blocks: false
+  tables: false
+
+# Multiple headers with same content
+MD024:
+  siblings_only: true
+
+# Inline HTML
+MD033:
+  allowed_elements:
+    - br

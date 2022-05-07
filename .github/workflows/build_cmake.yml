@@ -64,6 +64,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Check Markdown syntax (docker)
+        if: runner.os == 'Linux'
+        shell: sh
+        run: |
+          make -- check-md
+
+      - name: Check YAML syntax (docker)
+        if: runner.os == 'Linux'
+        shell: sh
+        run: |
+          make -- check-yaml
+
+      - name: Check Python syntax (PEP8) (docker)
+        if: runner.os == 'Linux'
+        shell: sh
+        run: |
+          make -- check-pep8
+
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v3
         with:

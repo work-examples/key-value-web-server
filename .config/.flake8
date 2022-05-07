@@ -1,0 +1,10 @@
+# flake8 checks for PEP-8 compliance
+# https://flake8.pycqa.org/en/latest/user/configuration.html
+
+[flake8]
+
+max-line-length = 120
+
+exclude =
+    .git,
+    .temp
