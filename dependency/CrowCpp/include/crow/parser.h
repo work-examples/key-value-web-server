@@ -183,9 +183,9 @@ namespace crow
         ci_map headers;
         query_string url_params; ///< What comes after the `?` in the URL.
         std::string body;
-        bool keep_alive;       ///< Whether or not the server should send a `connection: Keep-Alive` header to the client.
-        bool close_connection; ///< Whether or not the server should shut down the TCP connection once a response is sent.
+        bool keep_alive = false;       ///< Whether or not the server should send a `connection: Keep-Alive` header to the client.
+        bool close_connection = false; ///< Whether or not the server should shut down the TCP connection once a response is sent.
 
-        Handler* handler_; ///< This is currently an HTTP connection object (\ref crow.Connection).
+        Handler* handler_ = nullptr; ///< This is currently an HTTP connection object (\ref crow.Connection).
     };
 } // namespace crow

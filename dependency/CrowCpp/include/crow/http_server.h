@@ -231,19 +231,19 @@ namespace crow
         boost::asio::signal_set signals_;
         boost::asio::deadline_timer tick_timer_;
 
-        Handler* handler_;
-        uint16_t concurrency_{2};
+        Handler* handler_ = nullptr;
+        uint16_t concurrency_ = { 2 };
         std::uint8_t timeout_;
         std::string server_name_;
-        uint16_t port_;
+        uint16_t port_ = 0;
         std::string bindaddr_;
         std::vector<std::atomic<unsigned int>> task_queue_length_pool_;
 
-        std::chrono::milliseconds tick_interval_;
+        std::chrono::milliseconds tick_interval_ = {};
         std::function<void()> tick_function_;
 
-        std::tuple<Middlewares...>* middlewares_;
+        std::tuple<Middlewares...>* middlewares_ = nullptr;
 
-        typename Adaptor::context* adaptor_ctx_;
+        typename Adaptor::context* adaptor_ctx_ = nullptr;
     };
 } // namespace crow

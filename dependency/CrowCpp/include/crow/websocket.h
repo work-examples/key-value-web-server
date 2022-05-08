@@ -33,7 +33,7 @@ namespace crow
             void* userdata() { return userdata_; }
 
         private:
-            void* userdata_;
+            void* userdata_ = nullptr;
         };
 
         // Modified version of the illustration in RFC6455 Section-5.2
@@ -614,22 +614,22 @@ namespace crow
             std::vector<std::string> write_buffers_;
 
             boost::array<char, 4096> buffer_;
-            bool is_binary_;
+            bool is_binary_ = false;
             std::string message_;
             std::string fragment_;
             WebSocketReadState state_{WebSocketReadState::MiniHeader};
-            uint16_t remaining_length16_{0};
-            uint64_t remaining_length_{0};
-            bool close_connection_{false};
-            bool is_reading{false};
-            bool has_mask_{false};
-            uint32_t mask_;
-            uint16_t mini_header_;
-            bool has_sent_close_{false};
-            bool has_recv_close_{false};
-            bool error_occured_{false};
-            bool pong_received_{false};
-            bool is_close_handler_called_{false};
+            uint16_t remaining_length16_ = 0;
+            uint64_t remaining_length_ = 0;
+            bool close_connection_ = false;
+            bool is_reading = false;
+            bool has_mask_ = false;
+            uint32_t mask_ = 0;
+            uint16_t mini_header_ = 0;
+            bool has_sent_close_ = false;
+            bool has_recv_close_ = false;
+            bool error_occured_ = false;
+            bool pong_received_ = false;
+            bool is_close_handler_called_ = false;
 
             std::function<void(crow::websocket::connection&)> open_handler_;
             std::function<void(crow::websocket::connection&, const std::string&, bool)> message_handler_;

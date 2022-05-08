@@ -30,12 +30,15 @@ namespace crow
         ci_map headers;
         std::string body;
         std::string remote_ip_address; ///< The IP address from which the request was sent.
-        unsigned char http_ver_major, http_ver_minor;
-        bool keep_alive, close_connection, upgrade;
+        unsigned char http_ver_major = 0;
+        unsigned char http_ver_minor = 0;
+        bool keep_alive = false;
+        bool close_connection = false;
+        bool upgrade = false;
 
-        void* middleware_context{};
-        void* middleware_container{};
-        boost::asio::io_service* io_service{};
+        void* middleware_context = nullptr;
+        void* middleware_container = nullptr;
+        boost::asio::io_service* io_service = nullptr;
 
         /// Construct an empty request. (sets the method to `GET`)
         request():

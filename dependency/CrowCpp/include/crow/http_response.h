@@ -218,9 +218,9 @@ namespace crow
         /// Either a static file or a string body can be returned as 1 response.
         struct static_file_info
         {
-            std::string path = "";
+            std::string path;
             struct stat statbuf;
-            int statResult;
+            int statResult = 0;
         };
 
         /// Return a static file as the response body
@@ -267,7 +267,7 @@ namespace crow
         }
 
     private:
-        bool completed_{};
+        bool completed_ = false;
         std::function<void()> complete_request_handler_;
         std::function<bool()> is_alive_helper_;
         static_file_info file_info;

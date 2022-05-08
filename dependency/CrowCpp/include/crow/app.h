@@ -469,17 +469,17 @@ namespace crow
 
 #ifdef CROW_ENABLE_COMPRESSION
         compression::algorithm comp_algorithm_;
-        bool compression_used_{false};
+        bool compression_used_ = false;
 #endif
 
-        std::chrono::milliseconds tick_interval_;
+        std::chrono::milliseconds tick_interval_ = {};
         std::function<void()> tick_function_;
 
         std::tuple<Middlewares...> middlewares_;
 
 #ifdef CROW_ENABLE_SSL
         std::unique_ptr<ssl_server_t> ssl_server_;
-        bool ssl_used_{false};
+        bool ssl_used_ = false;
         ssl_context_t ssl_context_{boost::asio::ssl::context::sslv23};
 #endif
 
@@ -487,7 +487,7 @@ namespace crow
 
         std::vector<int> signals_{SIGINT, SIGTERM};
 
-        bool server_started_{false};
+        bool server_started_ = false;
         std::condition_variable cv_started_;
         std::mutex start_mutex_;
     };

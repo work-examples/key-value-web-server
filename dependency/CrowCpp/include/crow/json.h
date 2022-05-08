@@ -169,9 +169,9 @@ namespace crow
                 using iterator = const char*;
                 using const_iterator = const char*;
 
-                char* s_;         ///< Start.
-                mutable char* e_; ///< End.
-                uint8_t owned_{0};
+                char* s_ = nullptr;         ///< Start.
+                mutable char* e_ = nullptr; ///< End.
+                uint8_t owned_ = 0;
                 friend std::ostream& operator<<(std::ostream& os, const r_string& s)
                 {
                     os << static_cast<std::string>(s);
@@ -705,15 +705,15 @@ namespace crow
                     nt_ = num_type::Unsigned_integer;
             }
 
-            mutable char* start_;
-            mutable char* end_;
+            mutable char* start_ = nullptr;
+            mutable char* end_ = nullptr;
             detail::r_string key_;
             std::unique_ptr<rvalue[]> l_;
-            uint32_t lsize_;
-            uint16_t lremain_;
-            type t_;
-            num_type nt_{num_type::Null};
-            mutable uint8_t option_{0};
+            uint32_t lsize_ = 0;
+            uint16_t lremain_ = 0;
+            type t_ = type::Null;
+            num_type nt_ = num_type::Null;
+            mutable uint8_t option_ = 0;
 
             friend rvalue load_nocopy_internal(char* data, size_t size);
             friend rvalue load(const char* data, size_t size);

@@ -583,7 +583,7 @@ namespace crow
 
     private:
         Adaptor adaptor_;
-        Handler* handler_;
+        Handler* handler_ = nullptr;
 
         boost::array<char, 4096> buffer_;
 
@@ -600,21 +600,21 @@ namespace crow
         std::string date_str_;
         std::string res_body_copy_;
 
-        detail::task_timer::identifier_type task_id_;
+        detail::task_timer::identifier_type task_id_ = 0;
 
-        bool is_reading{};
-        bool is_writing{};
-        bool need_to_call_after_handlers_{};
-        bool need_to_start_read_after_complete_{};
-        bool add_keep_alive_{};
+        bool is_reading = false;
+        bool is_writing = false;
+        bool need_to_call_after_handlers_ = false;
+        bool need_to_start_read_after_complete_ = false;
+        bool add_keep_alive_ = false;
 
-        std::tuple<Middlewares...>* middlewares_;
+        std::tuple<Middlewares...>* middlewares_ = nullptr;
         detail::context<Middlewares...> ctx_;
 
         std::function<std::string()>& get_cached_date_str;
         detail::task_timer& task_timer_;
 
-        size_t res_stream_threshold_;
+        size_t res_stream_threshold_ = 0;
 
         std::atomic<unsigned int>& queue_length_;
     };
