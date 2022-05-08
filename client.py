@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import json
 import http.client
+import json
 import multiprocessing
 import random
 import sys
@@ -31,6 +31,7 @@ PERCENT_OF_WRITES = 1
 arg1 = sys.argv[1] if len(sys.argv) > 1 else ''
 
 LOG_EVERY_REQUEST = arg1 != '--no-logs'
+
 
 # =======================================
 
