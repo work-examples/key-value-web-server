@@ -7,7 +7,6 @@ name: CMake Build Matrix
 on: [ push, pull_request ] # yamllint disable-line rule:truthy
 
 env:
-  PROJECT_NAME: webserver
   CMAKE_VERSION: 3.23.0
   NINJA_VERSION: 1.10.2
   CCACHE_VERSION: 4.6
@@ -37,6 +36,9 @@ jobs:
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
+    env:
+      ARTIFACT_NAME: webserver-${{ matrix.config.artifact }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -314,22 +316,24 @@ jobs:
         shell: sh
         run: cmake --install "$RUNNER_TEMP/build" --prefix "$RUNNER_TEMP/instdir" --strip
 
-      - name: Pack
+      - name: Pack Build Artifact
         working-directory: ${{ runner.temp }}/instdir
         shell: sh
-        run: cmake -E tar cfv "$RUNNER_TEMP/$PROJECT_NAME-${{ matrix.config.artifact }}" --format=7zip -- .
+        run: cmake -E tar vcf "$RUNNER_TEMP/$ARTIFACT_NAME" --format=7zip -- .
 
-      - name: Upload
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v2
         with:
-          path: ${{ runner.temp }}/${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
-          name: ${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
+          path: ${{ runner.temp }}/${{ env.ARTIFACT_NAME }}
+          name: ${{ env.ARTIFACT_NAME }}
 
-  release:
+  create-release:
     name: Create Release for ${{ github.ref }}
     if: contains(github.ref, 'tags/v')
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - build
+      - check-formatting
     permissions:
       contents: write
 
@@ -355,13 +359,15 @@ jobs:
           path: ./upload_url
           name: upload_url
 
-  publish:
+  publish-release-artifacts:
     if: contains(github.ref, 'tags/v')
     name: Publish Release Artifacts from ${{ matrix.config.name }}
     runs-on: ubuntu-latest
-    needs: release
+    needs: create-release
     permissions:
       contents: write
+    env:
+      ARTIFACT_NAME: webserver-${{ matrix.config.artifact }}
 
     strategy:
       fail-fast: false
@@ -387,10 +393,10 @@ jobs:
           }
 
     steps:
-      - name: Download artifact
+      - name: Download Artifact
         uses: actions/download-artifact@v2
         with:
-          name: "${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}"
+          name: ${{ env.ARTIFACT_NAME }}
           path: ./
 
       - name: Download URL
@@ -405,13 +411,13 @@ jobs:
           upload_url=`cat ./upload_url`
           echo ::set-output name=upload_url::$upload_url
 
-      - name: Upload to Release
+      - name: Upload Artifact to Release
         id: upload_to_release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
-          asset_path: ./${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
-          asset_name: ${{ env.PROJECT_NAME }}-${{ matrix.config.artifact }}
+          asset_path: ./${{ env.ARTIFACT_NAME }}
+          asset_name: ${{ env.ARTIFACT_NAME }}
           asset_content_type: application/x-7z-compressed
