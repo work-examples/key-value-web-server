@@ -1,6 +1,6 @@
 # Key-Value Web Server [![Code license](https://img.shields.io/github/license/work-examples/key-value-web-server)](LICENSE)
 
-An HTTP web server with a REST API for persistent key-value storage.
+**Example project:** An HTTP web server with a REST API for persistent key-value storage.
 Collects read-write statistics for the entire storage and for each key.
 
 **Language**: `C++17`  
@@ -13,7 +13,7 @@ Collects read-write statistics for the entire storage and for each key.
 | **master**  | [![CI status](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml?query=branch%3Amaster)   | [![CodeQL Code Analysis Status](https://github.com/work-examples/key-value-web-server/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/codeql-analysis.yml?query=branch%3Amaster) | [![Microsoft C++ Code Analysis Status](https://github.com/work-examples/key-value-web-server/actions/workflows/msvc.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/msvc.yml?query=branch%3Amaster) |
 | **develop** | [![CI status](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml/badge.svg?branch=develop)](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml?query=branch%3Adevelop) | \[not applicable\]                                                                                                                                                                                                                                                       | \[not applicable\]                                                                                                                                                                                                                                        |
 
-## Test Task Description
+## C++ Programmer's Test Task Description
 
 You need to write two applications, a client and a server, that communicate with each other.
 
