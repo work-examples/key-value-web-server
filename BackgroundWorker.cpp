@@ -40,18 +40,8 @@ void BackgroundWorker::run(const DataEngine& engine, const std::string& database
         {
             const auto saveSecondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(saveTime - lastSaveTime);
             LOG_INFO << "BackgroundWorker: save data to file after " << saveSecondsElapsed.count() << " seconds" << std::endl;
-
-            DataSerializer::Document document;
-
-            const std::function<DataEngine::EnumerateVisitorProc> visitor =
-                [&document](const std::string_view name, const std::string_view value)
-            {
-                document.add(name, value);
-                return;
-            };
-            engine.enumerate(visitor);
-
-            DataSerializer::save(databaseFilename, document);
+            const size_t savedRecordCount = store_data(engine, databaseFilename);
+            LOG_INFO << "BackgroundWorker: saved " << savedRecordCount << " DB records to file " << databaseFilename << std::endl;
             lastSaveTime = saveTime;
         }
 
@@ -83,4 +73,49 @@ void BackgroundWorker::stop_notify()
     m_conditional.notify_all();
 
     LOG_INFO << "BackgroundWorker: stop_notify: end" << std::endl;
+}
+
+size_t BackgroundWorker::initial_load_data(DataEngine& engine, const std::string& databaseFilename)
+{
+    size_t recordCount = 0;
+    auto loadVisitor = [&engine, &recordCount](const std::string_view name, const std::string_view value)
+    {
+        engine.initial_set(name, value);
+        ++recordCount;
+        return;
+    };
+
+    const bool ok = DataSerializer::load(databaseFilename, loadVisitor);
+    if (!ok)
+    {
+        LOG_ERROR << "DataSerializer::load() failed" << std::endl;
+        return recordCount;
+    }
+
+    return recordCount;
+}
+
+size_t BackgroundWorker::store_data(const DataEngine& engine, const std::string& databaseFilename)
+{
+    size_t recordCount = 0;
+    DataSerializer::Document document;
+
+    const std::function<DataEngine::EnumerateVisitorProc> visitor =
+        [&document, &recordCount](const std::string_view name, const std::string_view value)
+    {
+        document.add(name, value);
+        ++recordCount;
+        return;
+    };
+
+    engine.enumerate(visitor);
+
+    const bool ok = DataSerializer::save(databaseFilename, document);
+    if (!ok)
+    {
+        LOG_ERROR << "DataSerializer::save() failed" << std::endl;
+        return recordCount;
+    }
+
+    return recordCount;
 }

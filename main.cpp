@@ -1,6 +1,5 @@
 #include "BackgroundWorker.h"
 #include "DataEngine.h"
-#include "DataSerializer.h"
 #include "HttpServer.h"
 #include "Logger.h"
 
@@ -11,7 +10,7 @@
 #include <thread>
 
 
-int main(const int argc, const char * const * const argv)
+int main(const int argc, const char* const* const argv)
 {
     LOG_INFO << "main: begin" << std::endl;
     const std::string arg1 = argc > 1 ? argv[1] : "";
@@ -30,36 +29,33 @@ int main(const int argc, const char * const * const argv)
     DataEngine engine;
 
     LOG_INFO << "main: load data" << std::endl;
+    const size_t loadedRecordCount = BackgroundWorker::initial_load_data(engine, databaseFilename);
+    LOG_INFO << "main: loaded " << loadedRecordCount << " DB records from file " << databaseFilename << std::endl;
 
     {
-        size_t recordCount = 0;
-        auto loadVisitor = [&engine, &recordCount](const std::string_view name, const std::string_view value)
+        BackgroundWorker worker;
+
+        auto backgroundWorkerProc = [&worker, &engine, &databaseFilename]()
         {
-            engine.initial_set(name, value);
-            ++recordCount;
+            worker.run(engine, databaseFilename);
         };
-        DataSerializer::load(databaseFilename, loadVisitor);
-        LOG_INFO << "main: loaded " << recordCount << " DB records from file " << databaseFilename << std::endl;
+
+        auto backgroundWorkerFuture = std::async(std::launch::async, backgroundWorkerProc);
+
+        LOG_INFO << "main: listening connections: begin" << std::endl;
+
+        HttpServer server;
+        server.run(listenHost, listenPort, engine, logEachRequest);
+
+        LOG_INFO << "main: listening connections: end" << std::endl;
+
+        worker.stop_notify();
+        backgroundWorkerFuture.wait();
     }
 
-    BackgroundWorker worker;
-
-    auto backgroundWorkerProc = [&worker, &engine, &databaseFilename]()
-    {
-        worker.run(engine, databaseFilename);
-    };
-
-    auto backgroundWorkerFuture = std::async(std::launch::async, backgroundWorkerProc);
-
-    LOG_INFO << "main: listening connections: begin" << std::endl;
-
-    HttpServer server;
-    server.run(listenHost, listenPort, engine, logEachRequest);
-
-    LOG_INFO << "main: listening connections: end" << std::endl;
-
-    worker.stop_notify();
-    backgroundWorkerFuture.wait();
+    LOG_INFO << "main: save data to file before process exit" << std::endl;
+    const size_t savedRecordCount = BackgroundWorker::store_data(engine, databaseFilename);
+    LOG_INFO << "main: saved " << savedRecordCount << " DB records to file " << databaseFilename << std::endl;
 
     LOG_INFO << "main: end" << std::endl;
 
