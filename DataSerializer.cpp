@@ -83,17 +83,18 @@ bool DataSerializer::load(const std::string& filename, const std::function<ItemV
     for (auto iter = doc.MemberBegin(); iter != iterEnd; ++iter)
     {
         const auto& name = iter->name;
-        const auto& value = iter->value;
         if (!name.IsString())
         {
             LOG_ERROR << "JSON object element name is not a string. Type: "
                 << static_cast<int>(name.GetType()) << std::endl;
             return false;
         }
+
+        const auto& value = iter->value;
         if (!value.IsString())
         {
             LOG_ERROR << "JSON object element value is not a string. Type: "
-                << static_cast<int>(name.GetType()) << "; name: " << name.GetString() << std::endl;
+                << static_cast<int>(value.GetType()) << "; name: " << name.GetString() << std::endl;
             return false;
         }
 
