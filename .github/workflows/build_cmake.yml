@@ -190,12 +190,14 @@ jobs:
           restore-keys: |
             ${{ matrix.config.name }}-hunter-v1-
 
+      - name: Set Hunter cache directory
+        shell: sh
+        run: |
+          echo "HUNTER_ROOT=$RUNNER_TEMP/.hunter-cache" >> "$GITHUB_ENV"
+
       - name: Configure
         shell: cmake -P {0}
         run: |
-          set(ENV{HUNTER_ROOT} $ENV{RUNNER_TEMP}/.hunter-cache)
-          message(STATUS "HUNTER_ROOT: $ENV{HUNTER_ROOT}")
-
           set(path_separator ":")
           if ("${{ runner.os }}" STREQUAL "Windows")
             set(path_separator ";")
