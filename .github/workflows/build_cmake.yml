@@ -188,7 +188,7 @@ jobs:
           path: ${{ runner.temp }}/.hunter-cache
           key: ${{ matrix.config.name }}-hunter-v1-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
           restore-keys: |
-            ${{ matrix.config.name }}-hunter-v1
+            ${{ matrix.config.name }}-hunter-v1-
 
       - name: Configure
         shell: cmake -P {0}
