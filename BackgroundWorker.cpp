@@ -57,7 +57,11 @@ void BackgroundWorker::run(const DataEngine& engine, const std::string& database
 
         {
             std::unique_lock lock(m_protect);
-            const bool terminating = m_conditional.wait_until(lock, printTime + timeBetweenStatsPrints, [this] { return m_terminating; });
+            const bool terminating = m_conditional.wait_until(
+                lock,
+                printTime + timeBetweenStatsPrints,
+                [this] { return m_terminating; }
+            );
             if (terminating)
             {
                 break;

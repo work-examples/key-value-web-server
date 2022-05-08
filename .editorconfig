@@ -8,6 +8,17 @@ root = true
 [*]
 insert_final_newline = true
 charset = utf-8
+max_line_length = 100
+
+[{*.c, *.cpp, *.cxx, *.h, *.hpp}]
+indent_style = space
+indent_size = 4
+max_line_length = 140
+
+[{CMakeLists.txt, .cmake}]
+indent_style = space
+indent_size = 4
+max_line_length = 140
 
 [{Makefile, Makefile.*, *.mk}]
 indent_style = tab
