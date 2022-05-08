@@ -27,7 +27,7 @@ class DataSerializerDocument : public rapidjson::Document
 };
 
 
-DataSerializer::Document::Document():
+DataSerializer::Document::Document() :
     m_ptrDocument(std::make_unique<DataSerializerDocument>())
 {
     m_ptrDocument->SetObject();

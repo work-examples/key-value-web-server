@@ -35,7 +35,7 @@ class HttpServerApp : public crow::SimpleApp
 };
 
 
-HttpServer::HttpServer():
+HttpServer::HttpServer() :
     m_ptrApp(std::make_unique<HttpServerApp>())
 {
 }
@@ -113,7 +113,7 @@ void HttpServer::setup_routing(DataEngine& engine)
 
     // Set value
     CROW_ROUTE(app, "/api/records/<string>").methods(crow::HTTPMethod::POST)(
-        [&engine](const crow::request& req,  const std::string& nameRaw)
+        [&engine](const crow::request& req, const std::string& nameRaw)
         {
             using namespace std::literals;
             HttpServerHelpers::JsonBody body;
