@@ -56,17 +56,27 @@ jobs:
       # - name: Build CMake
       #   run: cmake --build ${{ env.build }}
 
-      - name: Initialize MSVC Code Analysis
-        uses: microsoft/msvc-code-analysis-action@04825f6d9e00f87422d6bf04e1a38b1f3ed60d99
+      - name: MSVC Code Analysis
+        uses: microsoft/msvc-code-analysis-action@v0.1.0
         # Provide a unique ID to access the sarif output path
         id: run-analysis
         with:
           cmakeBuildDirectory: ${{ env.build }}
+          buildConfiguration: Debug
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
+          # Any includes contained inside these paths will be excluded from analysis
+          ignoredIncludePaths: ${{ github.workspace }}/dependency
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ steps.run-analysis.outputs.sarif }}
+
+      # Upload SARIF file as an Artifact to download and view
+      - name: Upload SARIF as an Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: sarif-file.json
+          path: ${{ steps.run-analysis.outputs.sarif }}
