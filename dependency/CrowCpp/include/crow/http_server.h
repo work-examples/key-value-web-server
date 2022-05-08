@@ -177,12 +177,12 @@ namespace crow
         }
 
     private:
-        uint16_t pick_io_service_idx()
+        size_t pick_io_service_idx()
         {
-            uint16_t min_queue_idx = 0;
+            size_t min_queue_idx = 0;
 
             // TODO improve load balancing
-            for (uint16_t i = 1; i < task_queue_length_pool_.size() && task_queue_length_pool_[min_queue_idx] > 0; i++)
+            for (size_t i = 1; i < task_queue_length_pool_.size() && task_queue_length_pool_[min_queue_idx] > 0; i++)
             // No need to check other io_services if the current one has no tasks
             {
                 if (task_queue_length_pool_[i] < task_queue_length_pool_[min_queue_idx])
@@ -193,7 +193,7 @@ namespace crow
 
         void do_accept()
         {
-            uint16_t service_idx = pick_io_service_idx();
+            size_t service_idx = pick_io_service_idx();
             asio::io_service& is = *io_service_pool_[service_idx];
             task_queue_length_pool_[service_idx]++;
             CROW_LOG_DEBUG << &is << " {" << service_idx << "} queue length: " << task_queue_length_pool_[service_idx];
