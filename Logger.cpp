@@ -6,12 +6,18 @@
 #include <string_view>
 
 
-std::mutex Logger::s_protect;
+Logger::LogLevel Logger::m_minLogLevel = Logger::LogLevel::Debug;
+
 
 
 void Logger::log(const std::string& message, const LogLevel logLevel)
 {
     using namespace std::literals;
+
+    if (logLevel < m_minLogLevel)
+    {
+        return;
+    }
 
     std::string_view strLogLevel = "UNKNOWN"sv;
     switch (logLevel)
@@ -46,7 +52,8 @@ void Logger::log(const std::string& message, const LogLevel logLevel)
     gmtime_r(&tNow, &tmNow);
 #endif
 
-    std::lock_guard lock(s_protect);
+    static std::mutex protect;
+    std::lock_guard lock(protect);
 
     stream
         << std::put_time(&tmNow, "%Y-%m-%d %H:%M:%S") << '.' << std::setw(3) << std::setfill('0') << std::right << milliseconds

@@ -12,6 +12,9 @@
 
 int main(const int argc, const char* const* const argv)
 {
+    const Logger::LogLevel logLevel = Logger::LogLevel::Debug;
+    Logger::SetLogLevel(logLevel);
+
     LOG_INFO << "main: begin" << std::endl;
     const std::string arg1 = argc > 1 ? argv[1] : "";
 

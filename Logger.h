@@ -21,8 +21,18 @@ public:
 
     static void log(const std::string& message, const LogLevel logLevel);
 
+    static LogLevel GetLogLevel(const LogLevel level)
+    {
+        return m_minLogLevel;
+    }
+
+    static void SetLogLevel(const LogLevel level)
+    {
+        m_minLogLevel = level;
+    }
+
 protected:
-    static std::mutex s_protect;
+    static LogLevel m_minLogLevel;
 };
 
 class LogStream
@@ -89,5 +99,6 @@ private:
 };
 
 
+#define LOG_DEBUG  LogStream(Logger::LogLevel::Debug)
 #define LOG_INFO  LogStream(Logger::LogLevel::Info)
 #define LOG_ERROR LogStream(Logger::LogLevel::Error)
