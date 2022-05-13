@@ -17,4 +17,5 @@ MD013:
 # Inline HTML
 MD033:
   allowed_elements:
+    - a
     - br

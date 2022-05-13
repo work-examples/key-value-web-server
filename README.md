@@ -13,11 +13,27 @@ Collects read-write statistics for the entire storage and for each key.
 | **master**  | [![CI status](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml?query=branch%3Amaster)   | [![CodeQL Code Analysis Status](https://github.com/work-examples/key-value-web-server/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/codeql-analysis.yml?query=branch%3Amaster) | [![Microsoft C++ Code Analysis Status](https://github.com/work-examples/key-value-web-server/actions/workflows/msvc.yml/badge.svg?branch=master)](https://github.com/work-examples/key-value-web-server/actions/workflows/msvc.yml?query=branch%3Amaster) |
 | **develop** | [![CI status](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml/badge.svg?branch=develop)](https://github.com/work-examples/key-value-web-server/actions/workflows/build_cmake.yml?query=branch%3Adevelop) | \[not applicable\]                                                                                                                                                                                                                                                       | \[not applicable\]                                                                                                                                                                                                                                        |
 
-## C++ Programmer's Test Task Description
+## Contents
+
+- [C++ Programmer's Test Task Description](#task_description)
+  - [Server](#description_server)
+  - [Client Application](#description_client)
+- [Task Implementation Remarks](#implementation_remarks)
+  - [Choosing Web Server Implementation](#choosing_web_server)
+  - [Other Implementation Features](#other_implementation_features)
+- [Compile and Run](#compile_and_run)
+- [Web API](#web_api)
+  - [Get Value](#api_get_value)
+  - [Set Value](#api_set_value)
+- [Benchmark](#benchmark)
+  - [Testing Environment](#benchmark_environment)
+  - [Results](#benchmark_results)
+
+## C++ Programmer's Test Task Description <a name="task_description"></a>
 
 You need to write two applications, a client and a server, that communicate with each other.
 
-### Server
+### Server <a name="description_server"></a>
 
 The server has a configuration file on disk (`config.txt`). It stores key/value data.
 You can use any format. At startup, the server reads the configuration file.
@@ -52,7 +68,7 @@ writes=1
 When developing, you can use third-party libraries for parsing and for the network.
 For example `rapidjson`, `boost` etc.
 
-### Client Application
+### Client Application <a name="description_client"></a>
 
 Single threaded. Connects to the server, then selects a random key
 from the hardcoded list and executes `$get` on the server with a 99% probability,
@@ -63,9 +79,9 @@ Optionally make reconnect to the server in case of a disconnection, or if the se
 i.e. the client waits until it appears on the network.
 The client can be written in any language, even in Python.
 
-## Task Implementation Remarks
+## Task Implementation Remarks <a name="implementation_remarks"></a>
 
-### Choosing Web Server Implementation
+### Choosing Web Server Implementation <a name="choosing_web_server"></a>
 
 I decided to use well-known HTTP protocol for client-server communication.
 Thus, we can easily debug the solution using any browser, programs like `Postman`.
@@ -91,7 +107,7 @@ I was choosing among many libraries:
 
 Finally, I settled on `CrowCpp`.
 
-### Other Implementation Features
+### Other Implementation Features <a name="other_implementation_features"></a>
 
 The heart of the server engine uses `std::shared_mutex
 to optimize performance for many readers and single writer.
@@ -115,7 +131,7 @@ compiled with included complex C++ templates.
 
 The solution also makes heavy use of move semantics.
 
-## Compile and Run
+## Compile and Run <a name="compile_and_run"></a>
 
 1. Run CMake.
 2. Compile project. You will get `WebServer` executable
@@ -133,14 +149,14 @@ CI is also preparing `Client.exe` executable which is a compiled version of `cli
 python3 client.py
 ```
 
-## Web API
+## Web API <a name="web_api"></a>
 
 Two API methods are supported.
 
 Here is the prepared API request collection for Postman:
 [WebServer.postman_collection.json](WebServer.postman_collection.json)
 
-### Get Value
+### Get Value <a name="api_get_value"></a>
 
 `GET` <http://127.0.0.1:8000/api/records/{key-name}>
 
@@ -155,7 +171,7 @@ Reply body example:
 }
 ```
 
-### Set Value
+### Set Value <a name="api_set_value"></a>
 
 `POST` <http://127.0.0.1:8000/api/records/{key-name}>
 
@@ -175,9 +191,9 @@ Reply body example:
 }
 ```
 
-## Benchmark
+## Benchmark <a name="benchmark"></a>
 
-### Testing Environment
+### Testing Environment <a name="benchmark_environment"></a>
 
 CPU Intel Core i5 (8th gen), mobile version, 8 logical cores.  
 Visual Studio 2019 (v16.11.13), Release build  
@@ -192,7 +208,7 @@ WebServer.exe --no-logs
 Client.exe --no-logs
 ```
 
-### Results
+### Results <a name="benchmark_results"></a>
 
 | Number of <br/>request threads | 10K requests <br/>per thread, req/sec | 100K requests <br/>per thread, req/sec |
 |---:|------:|-------:|
