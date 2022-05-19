@@ -5,7 +5,7 @@ Collects read-write statistics for the entire storage and for each key.
 
 **Language**: `C++17`  
 **Dependencies**: `Boost v1.78.0`, `RapidJSON v1.1.0-b557259-p0`, `CrowCpp v1.0+2`, `PyInstaller` (optional)  
-**Software requirements**: `CMake 3.2+`, C++17 compatible compiler, `Python 3.7+`  
+**Software requirements**: `CMake 3.19+`, C++17 compatible compiler, `Python 3.7+`  
 **Operation systems**: `Windows`, `Linux`, `macOS`
 
 | Branch      | CI Build Status                                                                                                                                                                                                                                  | CodeQL Code Analysis                                                                                                                                                                                                                                                     | Microsoft C++ Code Analysis                                                                                                                                                                                                                               |
