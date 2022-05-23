@@ -46,12 +46,12 @@ protected:
         // Define copy-constructor to allow easier emplacing of such values into unordered_map values
         AtomicCounter(const IntegerCounter value = 0) noexcept
         {
-            this->store(value, std::memory_order_release);
+            this->store(value, std::memory_order_relaxed);
         }
         AtomicCounter(const AtomicCounter& obj) noexcept
         {
-            const auto value = obj.load(std::memory_order_acquire);
-            this->store(value, std::memory_order_release);
+            const auto value = obj.load(std::memory_order_relaxed);
+            this->store(value, std::memory_order_relaxed);
         }
     };
 
